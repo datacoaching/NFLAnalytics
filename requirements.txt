@@ -1,0 +1,7 @@
+nfl_data_py==0.3.1
+yfinance
+streamlit-autorefresh
+nfl_data_py
+pandas
+duckdb
+plotly
