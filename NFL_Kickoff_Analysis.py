@@ -40,6 +40,10 @@ df_teams = nfl.import_team_desc() # Import NFL team information
 
 st.title ('NFL Kickoff Analysis - 2024 Rule Changes')
 
+# Parameters -> users can make selections to change the scope of the graphs. for example, time remaining in the game, weather, kickoffs with a return vs. touchback
+
+# Filter the df_game_log data frame with the selections the user makes
+
 # Use SQL to create main kickoff data set
 kickoffs = duckdb.sql("""
                          select a.season,
@@ -125,8 +129,8 @@ kickoffs_agg = duckdb.sql("""select
                                 season,
                                 count(*) as number_kickoffs,
                                 avg(yardline_100) as avg_starting_position,
-                                avg(case when kickoff_returner_player_id is not null then yardline_100 end) as avg_starting_position_returns,
-                                avg(case when kickoff_returner_player_id is not null and penalty=0 then yardline_100 end) as avg_starting_position_touchbacks,
+                                avg(case when kickoff_returner_player_id is not null and penalty=0 then yardline_100 end) as avg_starting_position_returns,
+                                avg(case when kickoff_returner_player_id is null and penalty=0 then yardline_100 end) as avg_starting_position_touchbacks,
                                 sum(case when touchdown=1 then 1 else 0 end)/(count(*)*1.0) as touchdown_return_rate,
                                 sum(case when fixed_drive_result in ('Field goal','Touchdown') then 1 else 0 end)/(count(*)*1.0) as scoring_rate_on_drives_following_kickoffs,
                                 sum(case when fixed_drive_result in ('Field goal','Touchdown') and kickoff_returner_player_id is not null then 1 else 0 end)/sum(case when kickoff_returner_player_id is not null then 1 else 0 end) as scoring_rate_on_drives_following_returns,
@@ -151,8 +155,8 @@ kickoffs_team_agg = duckdb.sql("""select
                                 team_logo_espn as url,
                                 count(*) as number_kickoffs,
                                 avg(yardline_100) as avg_starting_position,
-                                avg(case when kickoff_returner_player_id is not null then yardline_100 end) as avg_starting_position_returns,
-                                avg(case when kickoff_returner_player_id is not null and penalty=0 then yardline_100 end) as avg_starting_position_touchbacks,
+                                avg(case when kickoff_returner_player_id is not null and penalty=0 then yardline_100 end) as avg_starting_position_returns,
+                                avg(case when kickoff_returner_player_id is null and penalty=0 then yardline_100 end) as avg_starting_position_touchbacks,
                                 sum(case when touchdown=1 then 1 else 0 end)/(count(*)*1.0) as touchdown_return_rate,
                                 sum(case when fixed_drive_result in ('Field goal','Touchdown') then 1 else 0 end)/(count(*)*1.0) as scoring_rate_on_drives_following_kickoffs,
                                 sum(case when fixed_drive_result in ('Field goal','Touchdown') and kickoff_returner_player_id is not null then 1 else 0 end)/sum(case when kickoff_returner_player_id is not null then 1 else 0 end) as scoring_rate_on_drives_following_returns,
@@ -229,7 +233,7 @@ for i, url in enumerate(image_urls): # for each record in our image_urls data se
             x=x[i],  # x position of the image
             y=y[i],  # y position of the image
             sizex=0.5,  # Adjust size as needed
-            sizey=0.5 , # Adjust size as needed
+            sizey=0.5, # Adjust size as needed
             xanchor="center", # Adjust the alignment of the image as needed for the x-axis
             yanchor="middle" # Adjust the alignment of the image as needed for the y-axis
         )
@@ -238,14 +242,14 @@ for i, url in enumerate(image_urls): # for each record in our image_urls data se
 # Customize layout
 fig.update_layout(
     title="Starting Field Position by Kickoff Return Rate", # Assign visual title
-    xaxis_title="", # Assign x-axis title
+    xaxis_title="Average Kickoff Return Rate", # Assign x-axis title
     yaxis_title="Average Starting Field Position", # Assign y-axis title
     height=800,  # Set the height of the chart
     xaxis=dict( # Apply data formatting to the x-axis (rounded to 1 decimal)
         showgrid=True,
         tickformat='.1%'  # Format x-axis labels to one decimal place
     ),
-    yaxis=dict( # Apply data formatting to the y-axis (% rounded to 1 decimal)
+    yaxis=dict( # Apply data formatting to the y-axis (rounded to 1 decimal)
         showgrid=True,
         tickformat='.1f'
     )
